@@ -78,13 +78,13 @@ Get your API token: **Make.com → Profile → API Tokens**
 # List all organizations your token has access to
 make-cli org list
 
-# Sync an entire org to a local folder (blueprints, hooks, connections, datastores...)
-make-cli sync pull --org <org-id> --output ./make-backup
+# Sync an entire org (auto-creates sync/<org-name>-<org-id>/)
+make-cli sync pull --org <org-id>
 
 # Explore synced data offline — no API calls needed
-make-cli analyze tree --dir ./make-backup
-make-cli analyze apps --dir ./make-backup
-make-cli analyze search "webhook" --blueprint --dir ./make-backup
+make-cli analyze tree --dir sync/<org-name>-<org-id>
+make-cli analyze apps --dir sync/<org-name>-<org-id>
+make-cli analyze search "webhook" --blueprint --dir sync/<org-name>-<org-id>
 
 # Interactive shell with tab completion
 make-cli repl
@@ -126,7 +126,7 @@ All commands support `--json` for machine-readable output, making them easy to p
 Downloads the full org hierarchy to disk — scenarios, blueprints, hooks, connections, datastores, functions, keys, and data structures:
 
 ```
-make-backup/
+sync/<org-name>-<org-id>/
 ├── manifest.json               ← scenario index + last sync timestamps
 ├── org.json
 └── teams/
@@ -154,12 +154,12 @@ make-backup/
 
 **Incremental sync** — only re-downloads scenarios that changed since last sync:
 ```bash
-make-cli sync pull --org <id> --output ./make-backup --incremental
+make-cli sync pull --org <id> --incremental
 ```
 
 **Filter to a single team:**
 ```bash
-make-cli sync pull --org <id> --team <team-id> --output ./make-backup
+make-cli sync pull --org <id> --team <team-id>
 ```
 
 ---
@@ -213,11 +213,11 @@ Example agent workflow:
 # Agent discovers available orgs
 make-cli --json org list
 
-# Agent syncs the target org
-make-cli sync pull --org 725415 --output /tmp/make-sync
+# Agent syncs the target org (auto-creates sync/3--sandbox-makeitfuture-725415/)
+make-cli sync pull --org 725415
 
 # Agent searches blueprints for a specific integration
-make-cli --json analyze search "hubspot" --blueprint --dir /tmp/make-sync
+make-cli --json analyze search "hubspot" --blueprint --dir sync/3--sandbox-makeitfuture-725415
 ```
 
 ---

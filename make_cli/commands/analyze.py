@@ -10,10 +10,28 @@ from rich.tree import Tree
 from core.output import print_json, error, console
 
 
-def _find_sync_dir(path: str) -> Path:
-    d = Path(path)
+def _find_sync_dir(path: str = None) -> Path:
+    if path:
+        d = Path(path)
+    else:
+        # Auto-detect: look for a single sync dir inside sync/
+        sync_root = Path("sync")
+        if sync_root.exists():
+            candidates = [p for p in sync_root.iterdir() if p.is_dir() and (p / "manifest.json").exists()]
+            if len(candidates) == 1:
+                d = candidates[0]
+            elif len(candidates) > 1:
+                names = ", ".join(c.name for c in sorted(candidates))
+                error(f"Multiple sync dirs found: {names}. Use --dir to pick one.")
+                raise SystemExit(1)
+            else:
+                error("No synced orgs found in sync/. Run: make-cli sync pull --org <id>")
+                raise SystemExit(1)
+        else:
+            error("No sync/ directory found. Run: make-cli sync pull --org <id>")
+            raise SystemExit(1)
     if not d.exists():
-        error(f"Sync directory not found: {d}. Run: make-cli sync pull --org <id> --output {d}")
+        error(f"Sync directory not found: {d}. Run: make-cli sync pull --org <id>")
         raise SystemExit(1)
     if not (d / "manifest.json").exists():
         error(f"No manifest.json found in {d}. Is this a valid sync directory?")
@@ -77,8 +95,8 @@ def analyze():
 
 
 @analyze.command("stats")
-@click.option("--dir", "sync_dir", default="./make-sync", show_default=True,
-              help="Sync directory to analyze")
+@click.option("--dir", "sync_dir", default=None,
+              help="Sync directory to analyze (auto-detects from sync/)")
 @click.pass_obj
 def analyze_stats(ctx, sync_dir: str):
     """Show statistics: teams, folders, scenarios, active/inactive."""
@@ -122,8 +140,8 @@ def analyze_stats(ctx, sync_dir: str):
 
 
 @analyze.command("apps")
-@click.option("--dir", "sync_dir", default="./make-sync", show_default=True,
-              help="Sync directory to analyze")
+@click.option("--dir", "sync_dir", default=None,
+              help="Sync directory to analyze (auto-detects from sync/)")
 @click.option("--top", default=30, type=int, show_default=True, help="Show top N apps")
 @click.pass_obj
 def analyze_apps(ctx, sync_dir: str, top: int):
@@ -164,8 +182,8 @@ def analyze_apps(ctx, sync_dir: str, top: int):
 
 
 @analyze.command("connections")
-@click.option("--dir", "sync_dir", default="./make-sync", show_default=True,
-              help="Sync directory to analyze")
+@click.option("--dir", "sync_dir", default=None,
+              help="Sync directory to analyze (auto-detects from sync/)")
 @click.pass_obj
 def analyze_connections(ctx, sync_dir: str):
     """List all connection references found across blueprints."""
@@ -215,8 +233,8 @@ def analyze_connections(ctx, sync_dir: str):
 
 
 @analyze.command("errors")
-@click.option("--dir", "sync_dir", default="./make-sync", show_default=True,
-              help="Sync directory to analyze")
+@click.option("--dir", "sync_dir", default=None,
+              help="Sync directory to analyze (auto-detects from sync/)")
 @click.pass_obj
 def analyze_errors(ctx, sync_dir: str):
     """List all invalid scenarios (isinvalid=true)."""
@@ -251,8 +269,8 @@ def analyze_errors(ctx, sync_dir: str):
 
 
 @analyze.command("tree")
-@click.option("--dir", "sync_dir", default="./make-sync", show_default=True,
-              help="Sync directory to analyze")
+@click.option("--dir", "sync_dir", default=None,
+              help="Sync directory to analyze (auto-detects from sync/)")
 @click.pass_obj
 def analyze_tree(ctx, sync_dir: str):
     """Display the org → team → folder → scenario hierarchy."""
@@ -302,8 +320,8 @@ def analyze_tree(ctx, sync_dir: str):
 
 @analyze.command("search")
 @click.argument("term")
-@click.option("--dir", "sync_dir", default="./make-sync", show_default=True,
-              help="Sync directory to analyze")
+@click.option("--dir", "sync_dir", default=None,
+              help="Sync directory to analyze (auto-detects from sync/)")
 @click.option("--blueprint", "search_blueprint", is_flag=True, default=False,
               help="Also search inside blueprint JSON content")
 @click.pass_obj

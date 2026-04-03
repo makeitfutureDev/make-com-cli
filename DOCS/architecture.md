@@ -202,35 +202,45 @@ def widget_list(ctx, org: int):
 The sync engine (`make-cli sync pull --org <id>`) downloads an entire org's structure to a local directory.
 
 ### Algorithm
-1. Fetch org details → save `org.json`
+1. Fetch org details → save `org.json`, auto-detect zone from org
 2. List all teams in org → for each team create directory + `team.json`
 3. For each team, list all folders → save `folder.json` per folder
 4. For each team, list all scenarios → group by `folderId`
 5. For each scenario:
-   - Save `scenario.json` (metadata)
-   - Fetch blueprint → save `blueprint.json` (pretty-printed JSON)
-6. Scenarios with no folder → go to `_unfiled/`
-7. Write `manifest.json` mapping local paths ↔ remote IDs + `lastEdit` timestamps
-8. Incremental mode: skip scenarios where `lastEdit` matches manifest entry
+   - Save `<name> - YYYY-MM-DD HH:MM.scenario.json` (metadata)
+   - Fetch blueprint → save `<name> - YYYY-MM-DD HH:MM.json` (blueprint)
+6. Scenarios with no folder → go to `folders/No Folder/`
+7. Metadata (hooks, connections, datastores, etc.) → `_metadata/`
+8. Write `manifest.json` mapping local paths ↔ remote IDs + `lastEdit` timestamps
+9. Incremental mode: skip scenarios where `lastEdit` matches manifest entry
 
 ### Filesystem Layout
 ```
-make-sync/
+sync/<org-name>-<org-id>/
 ├── manifest.json
 ├── org.json
 └── teams/
     └── {team-name}-{team-id}/
         ├── team.json
-        ├── _unfiled/
-        │   └── {scenario-name}-{scenario-id}/
-        │       ├── scenario.json
-        │       └── blueprint.json
-        └── folders/
-            └── {folder-name}-{folder-id}/
-                ├── folder.json
-                └── {scenario-name}-{scenario-id}/
-                    ├── scenario.json
-                    └── blueprint.json
+        ├── folders/
+        │   ├── No Folder/
+        │   │   └── {scenario-name}-{scenario-id}/
+        │   │       ├── <name> - YYYY-MM-DD HH:MM.json           ← blueprint
+        │   │       └── <name> - YYYY-MM-DD HH:MM.scenario.json  ← metadata
+        │   └── {folder-name}-{folder-id}/
+        │       ├── folder.json
+        │       └── {scenario-name}-{scenario-id}/
+        │           ├── <name> - YYYY-MM-DD HH:MM.json           ← blueprint
+        │           └── <name> - YYYY-MM-DD HH:MM.scenario.json  ← metadata
+        └── _metadata/
+            ├── hooks.json
+            ├── connections.json
+            ├── datastructures.json
+            ├── functions.json
+            ├── keys.json
+            └── datastores/{name}-{id}/
+                ├── datastore.json
+                └── records.json
 ```
 
 ### manifest.json Schema
@@ -252,14 +262,14 @@ make-sync/
 
 ## Analysis Commands Design (Phase 6)
 
-All analysis commands read from the local sync directory (default: `./make-sync`). **No API calls.**
+All analysis commands read from the local sync directory. **No API calls.**
 
 | Command | What it does |
 |---|---|
 | `analyze stats` | Counts: teams, folders, scenarios total, active, inactive, invalid |
 | `analyze apps` | Extracts all `module` IDs from blueprint `flow[]` arrays — which Make apps are used |
 | `analyze connections` | Finds connection references (`connection.id`) across all blueprints |
-| `analyze errors` | Lists scenarios where `isinvalid: true` in `scenario.json` |
+| `analyze errors` | Lists scenarios where `isinvalid: true` in `*.scenario.json` |
 | `analyze tree` | Pretty-prints org→team→folder→scenario hierarchy using `rich.tree.Tree` |
 | `analyze search <term>` | Full-text search across scenario names and blueprint JSON content |
 

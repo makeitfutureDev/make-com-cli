@@ -222,13 +222,14 @@ sync/<org-name>-<org-id>/
 
 ### `make-cli analyze` — Analyze Local Sync ⭐
 ```
-make-cli analyze stats   [--dir ./make-sync]   # counts: teams, folders, scenarios, active/inactive
-make-cli analyze apps    [--dir ./make-sync]   # which Make apps are used across all blueprints
-make-cli analyze connections [--dir]           # which connections are referenced
-make-cli analyze errors  [--dir ./make-sync]   # scenarios with isinvalid=true
-make-cli analyze tree    [--dir ./make-sync]   # org → team → folder → scenario hierarchy
-make-cli analyze search <term> [--dir] [--blueprint]  # search across names and blueprint JSON
+make-cli analyze stats   [--dir DIR]   # counts: teams, folders, scenarios, active/inactive
+make-cli analyze apps    [--dir DIR]   # which Make apps are used across all blueprints
+make-cli analyze connections [--dir DIR]  # which connections are referenced
+make-cli analyze errors  [--dir DIR]   # scenarios with isinvalid=true
+make-cli analyze tree    [--dir DIR]   # org → team → folder → scenario hierarchy
+make-cli analyze search <term> [--dir DIR] [--blueprint]  # search across names and blueprint JSON
 ```
+`--dir` auto-detects from `sync/` if only one org is synced. Use `--dir sync/<name>-<id>` when multiple orgs exist.
 
 ### `make-cli config` — Configuration
 ```
