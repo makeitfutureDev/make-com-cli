@@ -1,10 +1,9 @@
 """make-cli analyze commands — work on local synced data, no API calls."""
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 import click
-from rich.console import Console
 from rich.table import Table
 from rich.tree import Tree
 
@@ -86,7 +85,7 @@ def analyze_stats(ctx, sync_dir: str):
     d = _find_sync_dir(sync_dir)
     manifest = _load_json(d / "manifest.json")
 
-    teams = list((d / "teams").iterdir()) if (d / "teams").exists() else []
+    teams = [t for t in (d / "teams").iterdir() if t.is_dir() and not t.name.startswith("_")] if (d / "teams").exists() else []
     # Count folder directories under teams/*/folders/
     total_folders = sum(
         1 for folders_dir in d.glob("teams/*/folders")

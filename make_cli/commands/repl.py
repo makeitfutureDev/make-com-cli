@@ -1,5 +1,4 @@
 """make-cli repl — interactive shell with tab-completion and history."""
-import os
 import shlex
 import click
 from core.output import console
@@ -46,8 +45,9 @@ def repl(ctx):
     )
 
     # Banner with SKILL.md path for AI agent discoverability
+    from make_cli.cli import __version__
     skill_path = Path(__file__).resolve().parent.parent.parent / "SKILL.md"
-    console.print("[bold green]make-cli REPL[/bold green] v0.1.0")
+    console.print(f"[bold green]make-cli REPL[/bold green] v{__version__}")
     console.print(f"[dim]SKILL.md: {skill_path}[/dim]")
     console.print("[dim]Type commands, [bold]Tab[/bold] to complete, [bold]exit[/bold] or [bold]Ctrl+D[/bold] to quit[/dim]\n")
 
@@ -82,3 +82,7 @@ def repl(ctx):
             console.print(f"[yellow]Usage error:[/yellow] {e}")
         except Exception as e:
             console.print(f"[red]Error:[/red] {e}")
+        finally:
+            # Reset json_mode so --json in one command doesn't leak to the next
+            from core.output import set_json_mode
+            set_json_mode(False)

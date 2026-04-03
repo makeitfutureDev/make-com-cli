@@ -1,7 +1,6 @@
 """make-cli sync commands — pull entire org to local filesystem."""
 import json
 import re
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -306,20 +305,25 @@ def sync_pull(ctx, org_id: int, output_dir: str, incremental: bool, team_filter)
     _save_manifest(out, manifest)
 
     # Summary
-    summary = Table(title="Sync Complete", show_header=True, header_style="bold green")
-    summary.add_column("Metric", style="cyan")
-    summary.add_column("Count", justify="right")
-    summary.add_row("Teams synced", str(stats["teams"]))
-    summary.add_row("Folders synced", str(stats["folders"]))
-    summary.add_row("Scenarios synced", str(stats["scenarios"]))
-    summary.add_row("Blueprints downloaded", str(stats["blueprints"]))
-    if stats["skipped"]:
-        summary.add_row("Scenarios skipped (unchanged)", str(stats["skipped"]))
-    summary.add_row("Webhooks synced", str(stats["hooks"]))
-    summary.add_row("Connections synced", str(stats["connections"]))
-    summary.add_row("Data stores synced", str(stats["datastores"]))
-    summary.add_row("Data structures synced", str(stats["datastructures"]))
-    summary.add_row("Functions synced", str(stats["functions"]))
-    summary.add_row("Keys synced", str(stats["keys"]))
-    summary.add_row("Output directory", str(out.resolve()))
-    console.print(summary)
+    stats["output_directory"] = str(out.resolve())
+    if ctx.json_mode:
+        from core.output import print_json
+        print_json(stats)
+    else:
+        summary = Table(title="Sync Complete", show_header=True, header_style="bold green")
+        summary.add_column("Metric", style="cyan")
+        summary.add_column("Count", justify="right")
+        summary.add_row("Teams synced", str(stats["teams"]))
+        summary.add_row("Folders synced", str(stats["folders"]))
+        summary.add_row("Scenarios synced", str(stats["scenarios"]))
+        summary.add_row("Blueprints downloaded", str(stats["blueprints"]))
+        if stats["skipped"]:
+            summary.add_row("Scenarios skipped (unchanged)", str(stats["skipped"]))
+        summary.add_row("Webhooks synced", str(stats["hooks"]))
+        summary.add_row("Connections synced", str(stats["connections"]))
+        summary.add_row("Data stores synced", str(stats["datastores"]))
+        summary.add_row("Data structures synced", str(stats["datastructures"]))
+        summary.add_row("Functions synced", str(stats["functions"]))
+        summary.add_row("Keys synced", str(stats["keys"]))
+        summary.add_row("Output directory", stats["output_directory"])
+        console.print(summary)

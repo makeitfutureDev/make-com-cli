@@ -9,6 +9,7 @@ class CliContext:
     _token: Optional[str] = field(default=None, repr=False)
     _zone: str = field(default="eu1", repr=False)
     _client: object = field(default=None, repr=False)
+    _org_zone_cache: dict = field(default_factory=dict, repr=False)
 
     @property
     def client(self):
@@ -23,23 +24,30 @@ class CliContext:
 
     def use_org_zone(self, org_id: int):
         """Switch the client zone to match the org's actual zone.
-        First tries a direct GET; falls back to scanning the org list.
-        Safe to call before any org-scoped API operations.
+        Caches the result so subsequent calls for the same org are free.
         """
+        # Return immediately if already resolved
+        if org_id in self._org_zone_cache:
+            zone = self._org_zone_cache[org_id]
+            if zone:
+                self.client.switch_zone(zone)
+            return
+
         from utils.make_backend import MakeAPIError
         zone = None
         try:
             data = self.client.get(f"/organizations/{org_id}")
             zone = data.get("organization", data).get("zone", "")
         except MakeAPIError:
-            # Direct GET not permitted — scan org list instead
+            # Direct GET not permitted — scan org list and cache all orgs
             try:
                 data = self.client.get("/organizations")
                 for o in data.get("organizations", []):
-                    if o.get("id") == org_id:
-                        zone = o.get("zone", "")
-                        break
+                    self._org_zone_cache[o.get("id")] = o.get("zone", "")
+                zone = self._org_zone_cache.get(org_id, "")
             except MakeAPIError:
                 pass
+
+        self._org_zone_cache[org_id] = zone
         if zone:
             self.client.switch_zone(zone)

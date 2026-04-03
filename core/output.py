@@ -1,7 +1,5 @@
 """Output helpers: rich tables vs JSON."""
 import json
-import sys
-import functools
 from typing import Any
 from rich.console import Console
 from rich.table import Table

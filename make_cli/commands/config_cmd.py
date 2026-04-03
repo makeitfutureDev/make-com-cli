@@ -39,7 +39,8 @@ def config_set(key: str, value: str):
     cfg = load_config()
     cfg[key] = value
     save_config(cfg)
-    success(f"Set {key} = {value}")
+    display = f"{value[:4]}...{value[-4:]}" if "token" in key.lower() and len(value) > 12 else value
+    success(f"Set {key} = {display}")
 
 
 @config_cmd.command("unset")

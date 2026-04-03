@@ -1,12 +1,15 @@
 """Make.com CLI — root entry point."""
+import importlib
 import click
 from make_cli.context import CliContext
 from core.config import get_token, get_zone
 from core.output import set_json_mode
 
+__version__ = "0.1.0"
+
 
 @click.group(invoke_without_command=True)
-@click.version_option(version="0.1.0", prog_name="make-cli")
+@click.version_option(version=__version__, prog_name="make-cli")
 @click.option("--json", "json_mode", is_flag=True, default=False, help="Output as JSON")
 @click.option("--zone", default=None, help="Make.com zone (eu1, eu2, us1, us2)")
 @click.option(
@@ -63,7 +66,6 @@ _COMMAND_IMPORTS = [
 
 for module_path, attr_name in _COMMAND_IMPORTS:
     try:
-        import importlib
         mod = importlib.import_module(module_path)
         main.add_command(getattr(mod, attr_name))
     except (ImportError, AttributeError):
