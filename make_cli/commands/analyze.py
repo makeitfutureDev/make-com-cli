@@ -275,15 +275,19 @@ def analyze_tree(ctx, sync_dir: str):
         team_name = team.get("name", team_dir.name)
         team_node = root.add(f"[bold cyan]👥 {team_name}[/bold cyan]")
 
-        # Folders
+        # Folders (including "No Folder" for unfiled scenarios)
         folders_dir = team_dir / "folders"
         if folders_dir.exists():
             for folder_dir in sorted(folders_dir.iterdir()):
                 if not folder_dir.is_dir():
                     continue
-                folder = _load_json(folder_dir / "folder.json")
-                fname = folder.get("name", folder_dir.name)
-                folder_node = team_node.add(f"[yellow]📁 {fname}[/yellow]")
+                if folder_dir.name == "No Folder":
+                    fname = "No Folder"
+                    folder_node = team_node.add(f"[dim]📁 {fname}[/dim]")
+                else:
+                    folder = _load_json(folder_dir / "folder.json")
+                    fname = folder.get("name", folder_dir.name)
+                    folder_node = team_node.add(f"[yellow]📁 {fname}[/yellow]")
                 for scenario_dir in sorted(folder_dir.iterdir()):
                     if not scenario_dir.is_dir():
                         continue
@@ -292,19 +296,6 @@ def analyze_tree(ctx, sync_dir: str):
                     active = s.get("isActive", False)
                     icon = "🟢" if active else "⚫"
                     folder_node.add(f"{icon} {sname} [dim](#{s.get('id')})[/dim]")
-
-        # Unfiled
-        unfiled_dir = team_dir / "_unfiled"
-        if unfiled_dir.exists():
-            unfiled_scenarios = [p for p in unfiled_dir.iterdir() if p.is_dir()]
-            if unfiled_scenarios:
-                unfiled_node = team_node.add("[dim]📁 _unfiled[/dim]")
-                for scenario_dir in sorted(unfiled_scenarios):
-                    s = _load_scenario_json(scenario_dir)
-                    sname = s.get("name", scenario_dir.name)
-                    active = s.get("isActive", False)
-                    icon = "🟢" if active else "⚫"
-                    unfiled_node.add(f"{icon} {sname} [dim](#{s.get('id')})[/dim]")
 
     console.print(root)
 

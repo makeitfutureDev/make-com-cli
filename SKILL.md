@@ -197,11 +197,11 @@ make-sync/
 └── teams/
     └── <team-name>-<id>/
         ├── team.json
-        ├── _unfiled/
-        │   └── <scenario-name>-<id>/
-        │       ├── scenario.json
-        │       └── blueprint.json
         ├── folders/
+        │   ├── No Folder/
+        │   │   └── <scenario-name>-<id>/
+        │   │       ├── <name> - YYYY-MM-DD HH:MM.json
+        │   │       └── <name> - YYYY-MM-DD HH:MM.scenario.json
         │   └── <folder-name>-<id>/
         │       └── <scenario-name>-<id>/
         │           ├── scenario.json

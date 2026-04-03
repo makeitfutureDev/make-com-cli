@@ -133,11 +133,14 @@ make-backup/
     └── <team-name>-<id>/
         ├── team.json
         ├── folders/
+        │   ├── No Folder/      ← scenarios not assigned to a folder
+        │   │   └── <scenario-name>-<id>/
+        │   │       ├── <name> - YYYY-MM-DD HH:MM.json           ← blueprint
+        │   │       └── <name> - YYYY-MM-DD HH:MM.scenario.json  ← metadata
         │   └── <folder-name>-<id>/
         │       └── <scenario-name>-<id>/
         │           ├── <name> - YYYY-MM-DD HH:MM.json           ← blueprint
         │           └── <name> - YYYY-MM-DD HH:MM.scenario.json  ← metadata
-        ├── _unfiled/           ← scenarios not assigned to a folder
         └── _metadata/          ← hooks, connections, datastores, functions, keys
             ├── hooks.json
             ├── connections.json

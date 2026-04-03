@@ -160,7 +160,7 @@ def sync_pull(ctx, org_id: int, output_dir: str, incremental: bool, team_filter)
                 folders_by_id[fid] = folder_dir
                 stats["folders"] += 1
 
-            unfiled_dir = team_dir / "_unfiled"
+            unfiled_dir = folders_dir / "No Folder"
             meta_dir = team_dir / "_metadata"
 
             # --- Step 4: Scenarios for this team ---
