@@ -1,7 +1,9 @@
 """make-cli config commands."""
+import shutil
+from pathlib import Path
 import click
 from core.config import load_config, save_config
-from core.output import print_kv, print_json, success
+from core.output import print_kv, print_json, success, error
 
 
 @click.group("config")
@@ -54,3 +56,34 @@ def config_unset(key: str):
         success(f"Removed {key}")
     else:
         click.echo(f"Key '{key}' not found in config.")
+
+
+@config_cmd.command("install-skill")
+@click.option("--scope", type=click.Choice(["user", "project"]), default="user",
+              show_default=True, help="Install for all projects (user) or current project only")
+def config_install_skill(scope: str):
+    """Install SKILL.md so Claude Code can discover make-cli.
+
+    \b
+    Scopes:
+      user     ~/.claude/skills/make-cli/SKILL.md  (all projects)
+      project  .claude/skills/make-cli/SKILL.md    (current project)
+    """
+    # Find SKILL.md — check package dir first, then repo root
+    pkg_dir = Path(__file__).resolve().parent.parent
+    source = pkg_dir / "SKILL.md"
+    if not source.exists():
+        source = pkg_dir.parent / "SKILL.md"
+    if not source.exists():
+        error("SKILL.md not found. Is the package installed correctly?")
+        raise SystemExit(1)
+
+    if scope == "user":
+        target_dir = Path.home() / ".claude" / "skills" / "make-cli"
+    else:
+        target_dir = Path(".claude") / "skills" / "make-cli"
+
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / "SKILL.md"
+    shutil.copy2(source, target)
+    success(f"Installed SKILL.md → {target}")

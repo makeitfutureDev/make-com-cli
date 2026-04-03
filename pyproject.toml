@@ -21,3 +21,6 @@ make-cli = "make_cli.cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["make_cli*", "core*", "utils*"]
+
+[tool.setuptools.package-data]
+make_cli = ["SKILL.md"]
