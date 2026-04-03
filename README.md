@@ -70,6 +70,12 @@ Get your API token: **Make.com → Profile → API Tokens**
 
 > Zone is auto-detected per org — if you work across multiple zones, just set any valid zone as default and the CLI switches automatically.
 
+**Install the Claude Code skill** (makes the CLI discoverable by AI agents):
+```bash
+make-cli config install-skill
+```
+This copies `SKILL.md` to `~/.claude/skills/make-cli/` so Claude Code automatically knows how to use the CLI. Use `--scope project` to install for the current project only.
+
 ---
 
 ## Quick Start
