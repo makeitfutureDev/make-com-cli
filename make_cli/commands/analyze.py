@@ -7,7 +7,7 @@ import click
 from rich.table import Table
 from rich.tree import Tree
 
-from core.output import print_json, print_table, error, console
+from core.output import print_json, error, console
 
 
 def _find_sync_dir(path: str) -> Path:

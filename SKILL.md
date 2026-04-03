@@ -2,7 +2,7 @@
 name: make-cli
 description: CLI for the Make.com automation platform. Manage organizations, teams, folders, scenarios, webhooks, connections, data stores, functions, and sync entire orgs to local disk for analysis. Also covers Make.com MCP server setup, zone configuration, blueprint analysis, and searching for properties across synced scenario blueprints. Use when the user mentions Make.com, syncing scenarios, analyzing blueprints, managing orgs/teams, or needs MCP workarounds for endpoints not in the CLI.
 version: 0.1.0
-install: pip install -e /path/to/make.com-cli
+install: uv tool install git+https://github.com/makeitfutureDev/make-com-cli
 binary: make-cli
 config: make-cli config set api_token <token> && make-cli config set zone <eu1|eu2|us1|us2>
 ---
@@ -29,7 +29,7 @@ export MAKE_ZONE=eu1
 | Flag | Description |
 |---|---|
 | `--json` | Output machine-readable JSON (pipe-safe) |
-| `--zone TEXT` | Override API zone for this call |
+| `--zone TEXT` | Override default API zone (auto-detected per org) |
 | `--token TEXT` | Override API token for this call |
 
 ## Command Reference
@@ -185,13 +185,15 @@ make-cli user me
 
 ### `make-cli sync` — Sync Org to Disk ⭐
 ```
-make-cli sync pull --org <org-id> [--output ./make-sync] [--incremental] [--team ID]
+make-cli sync pull --org <org-id> [--output DIR] [--incremental] [--team ID]
 ```
 Downloads the full org hierarchy: teams → folders → scenarios → blueprints → hooks → connections → datastores → datastructures → functions → keys.
 
+Default output: `sync/<org-name>-<org-id>/` (auto-named from the org).
+
 Output structure:
 ```
-make-sync/
+sync/<org-name>-<org-id>/
 ├── manifest.json
 ├── org.json
 └── teams/
@@ -200,12 +202,12 @@ make-sync/
         ├── folders/
         │   ├── No Folder/
         │   │   └── <scenario-name>-<id>/
-        │   │       ├── <name> - YYYY-MM-DD HH:MM.json
-        │   │       └── <name> - YYYY-MM-DD HH:MM.scenario.json
+        │   │       ├── <name> - YYYY-MM-DD HH:MM.json           ← blueprint
+        │   │       └── <name> - YYYY-MM-DD HH:MM.scenario.json  ← metadata
         │   └── <folder-name>-<id>/
         │       └── <scenario-name>-<id>/
-        │           ├── scenario.json
-        │           └── blueprint.json
+        │           ├── <name> - YYYY-MM-DD HH:MM.json           ← blueprint
+        │           └── <name> - YYYY-MM-DD HH:MM.scenario.json  ← metadata
         └── _metadata/
             ├── hooks.json
             ├── connections.json
@@ -334,7 +336,7 @@ Use `claude mcp add` CLI — never edit these files manually. Restart Claude Cod
 
 ## Blueprint JSON Structure Reference
 
-When working with synced blueprints (in `blueprint.json` files or via `scenario blueprint`), understanding the structure is essential.
+When working with synced blueprints (the `<name> - YYYY-MM-DD HH:MM.json` files, or via `scenario blueprint`), understanding the structure is essential.
 
 ```json
 {
@@ -378,8 +380,8 @@ To find which scenarios use a specific field (e.g. a custom field `cf_crid`, a H
 **Step 1 — Find all matching files:**
 ```bash
 make-cli analyze search "cf_crid" --dir ~/make-backup --blueprint
-# Or with grep across synced files:
-grep -rl "cf_crid" ~/make-backup --include="blueprint.json"
+# Or with grep across synced blueprint files:
+grep -rl "cf_crid" ~/make-backup --include="*.json" --exclude="*.scenario.json"
 ```
 
 **Step 2 — Distinguish active mappings from schema/sample data:**

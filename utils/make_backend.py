@@ -1,7 +1,6 @@
 """Make.com API v2 HTTP client."""
-import os
 import requests
-from typing import Any, Optional
+from typing import Any
 
 ZONES = ["eu1", "eu2", "us1", "us2"]
 

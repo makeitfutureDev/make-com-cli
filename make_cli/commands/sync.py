@@ -5,12 +5,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import click
-from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from rich.table import Table
-from rich.tree import Tree
 
-from core.output import error, success, console
+from core.output import error, console
 from utils.make_backend import MakeAPIError
 
 MANIFEST_FILE = "manifest.json"
