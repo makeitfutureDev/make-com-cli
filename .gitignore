@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+
+# Secrets / config
+~/.make-cli/
+
+# Sync data (local only)
+sync/
+
+# IDE
+.DS_Store
+.cursor/
