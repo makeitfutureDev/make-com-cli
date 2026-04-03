@@ -98,12 +98,12 @@ def sync_pull(ctx, org_id: int, output_dir: str, incremental: bool, team_filter)
             raise SystemExit(1)
         org = org_data.get("organization", org_data)
 
-        # Resolve output directory — default to <org-name>-<org-id>
+        # Resolve output directory — default to sync/<org-name>-<org-id>
         if output_dir:
             out = Path(output_dir)
         else:
             org_name = org.get("name", f"org-{org_id}")
-            out = Path(_dir_name(org_name, org_id))
+            out = Path("sync") / _dir_name(org_name, org_id)
         out.mkdir(parents=True, exist_ok=True)
 
         manifest = _load_manifest(out) if incremental else {"scenarios": {}}
