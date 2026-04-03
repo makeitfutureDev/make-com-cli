@@ -240,8 +240,12 @@ def scenario_blueprint(ctx, scenario_id: int, blueprint_id, draft: bool, out):
         with open(out, "w") as f:
             f.write(bp_str)
         success(f"Blueprint saved to {out}")
+    elif ctx.json_mode:
+        print_json(bp)
     else:
-        print(bp_str)
+        from rich.syntax import Syntax
+        from core.output import console
+        console.print(Syntax(bp_str, "json", theme="monokai"))
 
 
 @scenario.command("versions")

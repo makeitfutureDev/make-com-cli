@@ -87,8 +87,10 @@ def analyze_stats(ctx, sync_dir: str):
     manifest = _load_json(d / "manifest.json")
 
     teams = list((d / "teams").iterdir()) if (d / "teams").exists() else []
+    # Count folder directories under teams/*/folders/
     total_folders = sum(
-        1 for _ in d.rglob("folder.json")
+        1 for folders_dir in d.glob("teams/*/folders")
+        for f in folders_dir.iterdir() if f.is_dir()
     )
     scenarios = list(_iter_scenarios(d))
     active = sum(1 for _, s, _ in scenarios if s.get("isActive"))
@@ -268,7 +270,7 @@ def analyze_tree(ctx, sync_dir: str):
         return
 
     for team_dir in sorted(teams_dir.iterdir()):
-        if not team_dir.is_dir():
+        if not team_dir.is_dir() or team_dir.name.startswith("_"):
             continue
         team = _load_json(team_dir / "team.json")
         team_name = team.get("name", team_dir.name)

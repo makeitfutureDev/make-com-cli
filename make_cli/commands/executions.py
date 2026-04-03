@@ -1,6 +1,6 @@
 """make-cli execution commands — /executions and /incomplete-executions endpoints."""
 import click
-from core.output import print_table, print_kv, print_json, error
+from core.output import print_table, print_kv, print_json, error, success
 from utils.make_backend import MakeAPIError
 
 
@@ -97,7 +97,6 @@ def execution_stop(ctx, scenario_id: int, execution_id: str):
     if ctx.json_mode:
         print_json(data)
     else:
-        from core.output import success
         success(f"Stopped execution {execution_id}")
 
 

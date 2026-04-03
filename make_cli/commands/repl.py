@@ -1,4 +1,6 @@
 """make-cli repl — interactive shell with tab-completion and history."""
+import os
+import shlex
 import click
 from core.output import console
 
@@ -17,18 +19,12 @@ def repl(ctx):
         console.print("[red]prompt-toolkit is required for REPL mode.[/red]")
         raise SystemExit(1)
 
-    import subprocess
-    import sys
-    import shlex
     from pathlib import Path
 
     # Build completions from all registered commands
-    main_cmd = ctx.find_root().command
-    top_commands = list(main_cmd.commands.keys())
-
-    # Gather all subcommands for completion
-    completions = list(top_commands)
-    for cmd_name, cmd_obj in main_cmd.commands.items():
+    root_cmd = ctx.find_root().command
+    completions = list(root_cmd.commands.keys())
+    for cmd_name, cmd_obj in root_cmd.commands.items():
         if hasattr(cmd_obj, "commands"):
             for sub in cmd_obj.commands.keys():
                 completions.append(f"{cmd_name} {sub}")
@@ -41,16 +37,19 @@ def repl(ctx):
 
     history_dir = Path.home() / ".make-cli"
     history_dir.mkdir(exist_ok=True)
-    history_file = history_dir / "repl_history"
 
     session = PromptSession(
-        history=FileHistory(str(history_file)),
+        history=FileHistory(str(history_dir / "repl_history")),
         auto_suggest=AutoSuggestFromHistory(),
         completer=completer,
         style=style,
     )
 
-    console.print("[bold green]make-cli REPL[/bold green] — type commands, [dim]exit[/dim] or [dim]Ctrl+D[/dim] to quit, [dim]Tab[/dim] to complete\n")
+    # Banner with SKILL.md path for AI agent discoverability
+    skill_path = Path(__file__).resolve().parent.parent.parent / "SKILL.md"
+    console.print("[bold green]make-cli REPL[/bold green] v0.1.0")
+    console.print(f"[dim]SKILL.md: {skill_path}[/dim]")
+    console.print("[dim]Type commands, [bold]Tab[/bold] to complete, [bold]exit[/bold] or [bold]Ctrl+D[/bold] to quit[/dim]\n")
 
     while True:
         try:
@@ -74,8 +73,12 @@ def repl(ctx):
             console.print(f"[red]Parse error:[/red] {e}")
             continue
 
-        # Run as subprocess so Click context is fresh each time
-        result = subprocess.run(
-            [sys.executable, "-m", "make_cli.cli"] + args,
-            capture_output=False,
-        )
+        # Run in-process via Click's invoke — no subprocess overhead
+        try:
+            root_cmd.main(args, ctx=ctx.find_root(), standalone_mode=False)
+        except SystemExit:
+            pass
+        except click.exceptions.UsageError as e:
+            console.print(f"[yellow]Usage error:[/yellow] {e}")
+        except Exception as e:
+            console.print(f"[red]Error:[/red] {e}")

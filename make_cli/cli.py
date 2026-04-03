@@ -2,9 +2,11 @@
 import click
 from make_cli.context import CliContext
 from core.config import get_token, get_zone
+from core.output import set_json_mode
 
 
 @click.group(invoke_without_command=True)
+@click.version_option(version="0.1.0", prog_name="make-cli")
 @click.option("--json", "json_mode", is_flag=True, default=False, help="Output as JSON")
 @click.option("--zone", default=None, help="Make.com zone (eu1, eu2, us1, us2)")
 @click.option(
@@ -17,6 +19,7 @@ from core.config import get_token, get_zone
 def main(ctx: click.Context, json_mode: bool, zone: str, token: str):
     """Make.com CLI — manage scenarios, teams, folders and sync your org."""
     ctx.ensure_object(dict)
+    set_json_mode(json_mode)
 
     resolved_token = get_token(token)
     resolved_zone = get_zone(zone)
@@ -35,120 +38,36 @@ def main(ctx: click.Context, json_mode: bool, zone: str, token: str):
 from make_cli.commands.config_cmd import config_cmd
 main.add_command(config_cmd)
 
-try:
-    from make_cli.commands.orgs import org
-    main.add_command(org)
-except ImportError:
-    pass
+_COMMAND_IMPORTS = [
+    ("make_cli.commands.orgs", "org"),
+    ("make_cli.commands.teams", "team"),
+    ("make_cli.commands.folders", "folder"),
+    ("make_cli.commands.scenarios", "scenario"),
+    ("make_cli.commands.sync", "sync"),
+    ("make_cli.commands.analyze", "analyze"),
+    ("make_cli.commands.hooks", "hook"),
+    ("make_cli.commands.connections", "connection"),
+    ("make_cli.commands.executions", "execution"),
+    ("make_cli.commands.executions", "incomplete"),
+    ("make_cli.commands.datastores", "datastore"),
+    ("make_cli.commands.datastructures", "datastructure"),
+    ("make_cli.commands.functions", "function"),
+    ("make_cli.commands.keys", "key"),
+    ("make_cli.commands.credentials", "credential"),
+    ("make_cli.commands.apps", "app"),
+    ("make_cli.commands.tools", "tool"),
+    ("make_cli.commands.validate", "validate"),
+    ("make_cli.commands.users", "user"),
+    ("make_cli.commands.repl", "repl"),
+]
 
-try:
-    from make_cli.commands.teams import team
-    main.add_command(team)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.folders import folder
-    main.add_command(folder)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.scenarios import scenario
-    main.add_command(scenario)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.sync import sync
-    main.add_command(sync)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.analyze import analyze
-    main.add_command(analyze)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.hooks import hook
-    main.add_command(hook)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.connections import connection
-    main.add_command(connection)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.executions import execution, incomplete
-    main.add_command(execution)
-    main.add_command(incomplete)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.datastores import datastore
-    main.add_command(datastore)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.datastructures import datastructure
-    main.add_command(datastructure)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.functions import function
-    main.add_command(function)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.keys import key
-    main.add_command(key)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.credentials import credential
-    main.add_command(credential)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.apps import app
-    main.add_command(app)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.tools import tool
-    main.add_command(tool)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.validate import validate
-    main.add_command(validate)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.users import user
-    main.add_command(user)
-except ImportError:
-    pass
-
-try:
-    from make_cli.commands.repl import repl
-    main.add_command(repl)
-except ImportError:
-    pass
+for module_path, attr_name in _COMMAND_IMPORTS:
+    try:
+        import importlib
+        mod = importlib.import_module(module_path)
+        main.add_command(getattr(mod, attr_name))
+    except (ImportError, AttributeError):
+        pass
 
 
 if __name__ == "__main__":

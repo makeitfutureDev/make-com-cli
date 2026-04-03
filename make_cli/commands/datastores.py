@@ -226,9 +226,9 @@ def records_replace(ctx, datastore_id: int, key: str, data: str):
         error(f"Invalid JSON for data: {e}")
         raise SystemExit(1)
     try:
-        result = ctx.client._request(
-            "PUT", f"/data-stores/{datastore_id}/data/{key}",
-            json={"data": data_dict},
+        result = ctx.client.put(
+            f"/data-stores/{datastore_id}/data/{key}",
+            data={"data": data_dict},
         )
     except MakeAPIError as e:
         error(str(e))

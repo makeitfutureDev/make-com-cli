@@ -1,5 +1,7 @@
 """Output helpers: rich tables vs JSON."""
 import json
+import sys
+import functools
 from typing import Any
 from rich.console import Console
 from rich.table import Table
@@ -7,9 +9,22 @@ from rich.table import Table
 console = Console()
 err_console = Console(stderr=True)
 
+# Module-level flag set by the CLI root group
+_json_mode = False
+
+
+def set_json_mode(enabled: bool):
+    global _json_mode
+    _json_mode = enabled
+
 
 def print_json(data: Any):
     print(json.dumps(data, indent=2, default=str))
+
+
+def print_error_json(msg: str, error_type: str = "api_error"):
+    """Output a structured JSON error to stdout (for agent consumption)."""
+    print(json.dumps({"error": msg, "type": error_type}))
 
 
 def print_table(headers: list, rows: list, title: str = None):
@@ -32,8 +47,13 @@ def print_kv(data: dict, title: str = None):
 
 
 def error(msg: str):
-    err_console.print(f"[bold red]Error:[/bold red] {msg}")
+    if _json_mode:
+        print_error_json(msg)
+    else:
+        err_console.print(f"[bold red]Error:[/bold red] {msg}")
 
 
 def success(msg: str):
+    if _json_mode:
+        return  # success messages are noise in JSON mode
     console.print(f"[bold green]✓[/bold green] {msg}")

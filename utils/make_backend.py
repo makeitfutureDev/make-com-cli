@@ -31,6 +31,7 @@ class MakeClient:
 
     def _request(self, method: str, path: str, **kwargs) -> Any:
         url = f"{self.base_url}{path}"
+        kwargs.setdefault("timeout", 30)
         try:
             resp = self.session.request(method, url, **kwargs)
         except requests.ConnectionError as e:
@@ -48,17 +49,25 @@ class MakeClient:
         return resp.json()
 
     def switch_zone(self, zone: str):
-        """Re-point the client to a different zone (e.g. after reading org zone from API)."""
-        if zone not in ZONES:
-            # Accept full hostnames like "eu1.make.com" or "eu1.make.celonis.com" — extract zone prefix
+        """Re-point the client to a different zone.
+
+        Accepts zone prefixes (eu1), full hostnames (eu1.make.com),
+        or Celonis hostnames (eu1.make.celonis.com).
+        """
+        # Full hostname — use as-is for the base URL
+        if "." in zone:
+            host = zone.rstrip("/")
             for z in ZONES:
                 if zone.startswith(z):
-                    zone = z
-                    break
-            else:
-                return  # unrecognised zone — leave as-is
-        self.zone = zone
-        self.base_url = f"https://{zone}.make.com/api/v2"
+                    self.zone = z
+                    self.base_url = f"https://{host}/api/v2"
+                    return
+            return  # unrecognised host — leave as-is
+
+        # Short zone prefix
+        if zone in ZONES:
+            self.zone = zone
+            self.base_url = f"https://{zone}.make.com/api/v2"
 
     def get(self, path: str, params: dict = None) -> Any:
         return self._request("GET", path, params=params)
@@ -68,6 +77,9 @@ class MakeClient:
 
     def patch(self, path: str, data: dict) -> Any:
         return self._request("PATCH", path, json=data)
+
+    def put(self, path: str, data: dict = None) -> Any:
+        return self._request("PUT", path, json=data)
 
     def delete(self, path: str, params: dict = None) -> Any:
         return self._request("DELETE", path, params=params)
