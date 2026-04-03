@@ -63,8 +63,8 @@ def sync():
 
 @sync.command("pull")
 @click.option("--org", "org_id", required=True, type=int, help="Organization ID to sync")
-@click.option("--output", "output_dir", default="./make-sync", show_default=True,
-              help="Local output directory")
+@click.option("--output", "output_dir", default=None,
+              help="Local output directory (default: ./<org-name>-<org-id>)")
 @click.option("--incremental", is_flag=True, default=False,
               help="Skip scenarios unchanged since last sync")
 @click.option("--team", "team_filter", default=None, type=int,
@@ -76,11 +76,6 @@ def sync_pull(ctx, org_id: int, output_dir: str, incremental: bool, team_filter)
     Downloads org → teams → folders → scenarios → blueprints.
     Preserves the full hierarchy on disk for offline analysis.
     """
-    out = Path(output_dir)
-    out.mkdir(parents=True, exist_ok=True)
-
-    manifest = _load_manifest(out) if incremental else {"scenarios": {}}
-
     stats = {"teams": 0, "folders": 0, "scenarios": 0, "blueprints": 0,
              "skipped": 0, "hooks": 0, "connections": 0, "datastores": 0,
              "functions": 0, "keys": 0, "datastructures": 0}
@@ -102,6 +97,16 @@ def sync_pull(ctx, org_id: int, output_dir: str, incremental: bool, team_filter)
             error(str(e))
             raise SystemExit(1)
         org = org_data.get("organization", org_data)
+
+        # Resolve output directory — default to <org-name>-<org-id>
+        if output_dir:
+            out = Path(output_dir)
+        else:
+            org_name = org.get("name", f"org-{org_id}")
+            out = Path(_dir_name(org_name, org_id))
+        out.mkdir(parents=True, exist_ok=True)
+
+        manifest = _load_manifest(out) if incremental else {"scenarios": {}}
         _write_json(out / "org.json", org)
 
         # Switch client zone to match the org's actual zone
