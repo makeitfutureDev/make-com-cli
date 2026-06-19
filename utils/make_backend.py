@@ -2,6 +2,8 @@
 import requests
 from typing import Any
 
+from core.config import get_base_url
+
 ZONES = ["eu1", "eu2", "us1", "us2"]
 
 
@@ -13,12 +15,11 @@ class MakeAPIError(Exception):
 
 
 class MakeClient:
-    def __init__(self, token: str, zone: str = "eu1"):
-        if zone not in ZONES:
-            raise ValueError(f"Invalid zone '{zone}'. Must be one of: {ZONES}")
+    def __init__(self, token: str, zone: str = "eu1", platform: str = "make"):
         self.token = token
         self.zone = zone
-        self.base_url = f"https://{zone}.make.com/api/v2"
+        self.platform = platform
+        self.base_url = get_base_url(platform, zone)
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -66,7 +67,7 @@ class MakeClient:
         # Short zone prefix
         if zone in ZONES:
             self.zone = zone
-            self.base_url = f"https://{zone}.make.com/api/v2"
+            self.base_url = get_base_url(self.platform, zone)
 
     def get(self, path: str, params: dict = None) -> Any:
         return self._request("GET", path, params=params)

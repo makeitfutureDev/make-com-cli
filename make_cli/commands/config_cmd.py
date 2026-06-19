@@ -34,8 +34,9 @@ def config_set(key: str, value: str):
 
     \b
     Keys:
-      api_token       Your Make.com API token
+      api_token       Your Make.com / Boost.space API token
       zone            API zone: eu1, eu2, us1, us2 (default: eu1)
+      platform        API platform: make or boost.space (default: make)
       default_org_id  Default organization ID
     """
     cfg = load_config()

@@ -2,7 +2,7 @@
 import importlib
 import click
 from make_cli.context import CliContext
-from core.config import get_token, get_zone
+from core.config import get_token, get_zone, get_platform
 from core.output import set_json_mode
 
 __version__ = "0.1.0"
@@ -13,24 +13,31 @@ __version__ = "0.1.0"
 @click.option("--json", "json_mode", is_flag=True, default=False, help="Output as JSON")
 @click.option("--zone", default=None, help="Make.com zone (eu1, eu2, us1, us2)")
 @click.option(
+    "--platform",
+    default=None,
+    help="API platform: make (default) or boost.space",
+)
+@click.option(
     "--token",
     default=None,
     envvar="MAKE_API_TOKEN",
     help="Make.com API token (overrides config/env)",
 )
 @click.pass_context
-def main(ctx: click.Context, json_mode: bool, zone: str, token: str):
+def main(ctx: click.Context, json_mode: bool, zone: str, platform: str, token: str):
     """Make.com CLI — manage scenarios, teams, folders and sync your org."""
     ctx.ensure_object(dict)
     set_json_mode(json_mode)
 
     resolved_token = get_token(token)
     resolved_zone = get_zone(zone)
+    resolved_platform = get_platform(platform)
 
     ctx.obj = CliContext(
         json_mode=json_mode,
         _token=resolved_token,
         _zone=resolved_zone,
+        _platform=resolved_platform,
     )
 
     if ctx.invoked_subcommand is None:

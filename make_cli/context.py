@@ -8,6 +8,7 @@ class CliContext:
     json_mode: bool = False
     _token: Optional[str] = field(default=None, repr=False)
     _zone: str = field(default="eu1", repr=False)
+    _platform: str = field(default="make", repr=False)
     _client: object = field(default=None, repr=False)
     _org_zone_cache: dict = field(default_factory=dict, repr=False)
 
@@ -19,7 +20,7 @@ class CliContext:
                 raise RuntimeError(
                     "No API token configured. Run: make-cli config set api_token <token>"
                 )
-            self._client = MakeClient(token=self._token, zone=self._zone)
+            self._client = MakeClient(token=self._token, zone=self._zone, platform=self._platform)
         return self._client
 
     def use_org_zone(self, org_id: int):
