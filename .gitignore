@@ -19,3 +19,4 @@ sync/
 # IDE
 .DS_Store
 .cursor/
+.gh/
