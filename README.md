@@ -70,6 +70,17 @@ Get your API token: **Make.com → Profile → API Tokens**
 
 > Zone is auto-detected per org — if you work across multiple zones, just set any valid zone as default and the CLI switches automatically.
 
+### Boost.space Integrator
+
+The CLI also works with [Boost.space](https://boost.space) Integrator, which uses the same API v2 at a different host. Set the `platform` key (default is `make`):
+
+```bash
+make-cli config set platform boost.space
+make-cli config set api_token YOUR_BOOST_SPACE_TOKEN
+```
+
+Or per-command with `--platform boost.space`, or via `export MAKE_PLATFORM=boost.space`. Switch back with `make-cli config set platform make`.
+
 **Install the Claude Code skill** (makes the CLI discoverable by AI agents):
 ```bash
 make-cli config install-skill

@@ -30,6 +30,7 @@ export MAKE_ZONE=eu1
 |---|---|
 | `--json` | Output machine-readable JSON (pipe-safe) |
 | `--zone TEXT` | Override default API zone (auto-detected per org) |
+| `--platform TEXT` | API platform: `make` (default) or `boost.space` |
 | `--token TEXT` | Override API token for this call |
 
 ## Command Reference
@@ -236,6 +237,7 @@ make-cli analyze search <term> [--dir DIR] [--blueprint]  # search across names 
 make-cli config show
 make-cli config set api_token YOUR_TOKEN
 make-cli config set zone eu1
+make-cli config set platform make   # or boost.space (uses integrator.boost.space)
 make-cli config set default_org_id 12345
 make-cli config unset <key>
 ```
